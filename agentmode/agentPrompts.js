@@ -102,21 +102,22 @@ Examples:
   NEXT_ACTION: (task, context, lastResult) => `
 Task: ${task}
 
-Information gathered so far:
-${context}
+Data gathered: ${context ? context.split('\n').filter(l => l.trim()).length + ' items' : '0'}
 
-Last action result:
-${JSON.stringify(lastResult, null, 2)}
+Last result summary:
+${lastResult?.data?.aiOverview ? '✓ AI Overview found' : ''}
+${lastResult?.data?.results?.length ? `✓ ${lastResult.data.results.length} results` : ''}
+${lastResult?.data?.count !== undefined ? `✓ ${lastResult.data.count} items found` : ''}
+${lastResult?.data?.error ? `⚠ Error: ${lastResult.data.error}` : ''}
+${lastResult?.data?.searchesRemaining !== undefined ? `Searches left: ${lastResult.data.searchesRemaining}` : ''}
 
-Based on the information above, decide your next action:
-- CHECK "searchesRemaining" - if 0, you must work with existing data or use open_url only
-- If you got an "aiOverview", this is high-quality AI-summarized content - it may be sufficient!
-- Only search again if you truly need different information (not just to verify)
-- open_url is unlimited but be selective - only open URLs that will add new value
-- If you have enough information to answer the user's question, use complete NOW
-- Don't over-research - good enough is better than exhaustive
+DECIDE NOW - respond with JSON only:
+- Have enough info? → {"action": "complete", "params": {"summary": "brief findings"}}
+- Need web search? → {"action": "search_web", "params": {"query": "..."}}
+- Need history? → {"action": "search_history", "params": {"query": "..."}}
+- Open URL for user? → {"action": "open_tab", "params": {"urls": ["..."]}}
 
-Respond with your next action in JSON format.`,
+IMPORTANT: Respond with {"action": "...", "params": {...}} only. No other text.`,
 
   // Completion prompt
   COMPLETE: (task, context) => `
