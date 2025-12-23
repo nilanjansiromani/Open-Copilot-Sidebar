@@ -227,6 +227,9 @@
       </div>
     </div>
     
+    <!-- Agent Status Container -->
+    <div class="agent-status-container" id="agentStatusContainer"></div>
+    
     <!-- Messages Area -->
     <div class="messages-container" id="messagesContainer">
       <div class="messages-list" id="messagesList"></div>
@@ -292,7 +295,7 @@
           </label>
         </div>
         <div class="input-hint">
-          @ add tabs • /todo • /note • /remember
+          @ add tabs • @agent for auto • /todo • /note
         </div>
       </div>
     </div>
@@ -392,6 +395,14 @@
   <script src="icons.js"></script>
   <script src="aiService.js"></script>
   <script src="memoryManager.js"></script>
+  
+  <!-- Agent Mode -->
+  <script src="agentmode/agentPrompts.js"></script>
+  <script src="agentmode/agentTools.js"></script>
+  <script src="agentmode/agentUI.js"></script>
+  <script src="agentmode/agentController.js"></script>
+  <script src="agentmode/index.js"></script>
+  
   <script src="sidepanel.js"></script>
 </body>
 </html>

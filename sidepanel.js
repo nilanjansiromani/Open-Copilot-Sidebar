@@ -318,9 +318,9 @@ function getWelcomeMessage() {
   } else {
     return `Hello! I'm **OpenCopilot**. I'm using the **current tab** as context.
 
-**Commands:** \`/todo\`, \`/note\`, \`/remember\`, \`/search\`
+**Commands:** \`@agent\` for autonomous tasks • \`/todo\` • \`/note\` • \`/remember\`
 
-Toggle "Auto-search tabs" in settings to search across all open tabs.`;
+Try: \`@agent search for hotels in bangalore\``;
   }
 }
 
@@ -463,33 +463,32 @@ function clearAllData() {
 
 // ==================== @ MENTION POPUP ====================
 
-// Show the mention popup
-function showMentionPopup() {
+// Mention state
+let mentionStartPos = -1; // Position where @ was typed
+let mentionQuery = '';    // Text typed after @
+
+// Show the mention popup (keep focus in main input)
+function showMentionPopup(startPos) {
   if (!mentionPopup) return;
   
   mentionActive = true;
-  mentionMode = 'tabs';
+  mentionStartPos = startPos;
+  mentionQuery = '';
   mentionHighlightIndex = 0;
   mentionPopup.style.display = 'block';
   
-  // Reset state
-  if (mentionSearch) {
-    mentionSearch.value = '';
-    mentionSearch.placeholder = 'Filter tabs...';
-  }
+  // Update title
   if (mentionTitle) {
-    mentionTitle.textContent = 'Open Tabs';
+    mentionTitle.textContent = 'Add to Context';
   }
   
-  // Reset button states
-  searchBookmarksBtn?.classList.remove('active');
-  searchHistoryBtn?.classList.remove('active');
+  // Hide search input and footer buttons (we use main input now)
+  if (mentionSearch) mentionSearch.style.display = 'none';
+  const mentionFooter = mentionPopup.querySelector('.mention-footer');
+  if (mentionFooter) mentionFooter.style.display = 'none';
   
-  // Load tabs
-  loadMentionTabs();
-  
-  // Focus search after a small delay
-  setTimeout(() => mentionSearch?.focus(), 50);
+  // Load all sources
+  loadAllMentionSources('');
 }
 
 // Hide the mention popup
@@ -497,148 +496,169 @@ function hideMentionPopup() {
   if (!mentionPopup) return;
   
   mentionActive = false;
+  mentionStartPos = -1;
+  mentionQuery = '';
   mentionPopup.style.display = 'none';
 }
 
-// Load open tabs into mention popup
-async function loadMentionTabs(filter = '') {
+// Load all sources (tabs, bookmarks, history) at once
+async function loadAllMentionSources(filter = '') {
   if (!mentionList) return;
   
+  const filterLower = filter.toLowerCase();
+  let results = { tabs: [], bookmarks: [], history: [] };
+  
   try {
+    // Load open tabs
     const tabs = await chrome.tabs.query({});
-    const accessibleTabs = tabs.filter(tab => 
-      tab.url &&
-      !tab.url.startsWith('chrome://') && 
-      !tab.url.startsWith('chrome-extension://') &&
-      !tab.url.startsWith('edge://') &&
-      !tab.url.startsWith('about:') &&
-      !tab.url.startsWith('data:')
-    );
-    
-    // Filter if search provided
-    const filterLower = filter.toLowerCase();
-    mentionItems = filterLower 
-      ? accessibleTabs.filter(tab => 
-          tab.title?.toLowerCase().includes(filterLower) ||
-          tab.url?.toLowerCase().includes(filterLower)
-        )
-      : accessibleTabs;
-    
-    renderMentionList();
-  } catch (error) {
-    console.error('Error loading tabs:', error);
-    mentionList.innerHTML = '<div class="mention-empty">Unable to load tabs</div>';
-  }
-}
-
-// Search bookmarks
-async function searchBookmarks(query) {
-  if (!mentionList) return;
-  
-  if (!query.trim()) {
-    mentionList.innerHTML = '<div class="mention-empty">Type to search bookmarks...</div>';
-    mentionItems = [];
-    return;
-  }
-  
-  try {
-    const results = await chrome.bookmarks.search(query);
-    mentionItems = results
-      .filter(b => b.url)
-      .slice(0, 15)
-      .map(b => ({
-        id: `bookmark-${b.id}`,
-        title: b.title || b.url,
-        url: b.url,
-        favIconUrl: `https://www.google.com/s2/favicons?domain=${new URL(b.url).hostname}&sz=32`,
-        type: 'bookmark'
+    results.tabs = tabs
+      .filter(tab => 
+        tab.url &&
+        !tab.url.startsWith('chrome://') && 
+        !tab.url.startsWith('chrome-extension://') &&
+        !tab.url.startsWith('edge://') &&
+        !tab.url.startsWith('about:') &&
+        !tab.url.startsWith('data:')
+      )
+      .filter(tab => !filterLower || 
+        tab.title?.toLowerCase().includes(filterLower) ||
+        tab.url?.toLowerCase().includes(filterLower)
+      )
+      .slice(0, 5)
+      .map(tab => ({
+        id: tab.id,
+        title: tab.title,
+        url: tab.url,
+        favIconUrl: tab.favIconUrl,
+        type: 'tab'
       }));
     
-    renderMentionList();
-  } catch (error) {
-    console.error('Error searching bookmarks:', error);
-    mentionList.innerHTML = '<div class="mention-empty">Error searching bookmarks</div>';
-  }
-}
-
-// Search history
-async function searchHistory(query) {
-  if (!mentionList) return;
-  
-  if (!query.trim()) {
-    mentionList.innerHTML = '<div class="mention-empty">Type to search history...</div>';
-    mentionItems = [];
-    return;
-  }
-  
-  try {
-    const results = await chrome.history.search({
-      text: query,
-      maxResults: 15
-    });
-    
-    mentionItems = results
-      .filter(h => h.url)
-      .map(h => ({
-        id: `history-${h.id}`,
-        title: h.title || h.url,
-        url: h.url,
-        favIconUrl: `https://www.google.com/s2/favicons?domain=${new URL(h.url).hostname}&sz=32`,
-        type: 'history'
-      }));
-    
-    renderMentionList();
-  } catch (error) {
-    console.error('Error searching history:', error);
-    mentionList.innerHTML = '<div class="mention-empty">Error searching history</div>';
-  }
-}
-
-// Render the mention list
-function renderMentionList() {
-  if (!mentionList) return;
-  
-  if (mentionItems.length === 0) {
-    const emptyText = mentionMode === 'tabs' ? 'No tabs found' 
-      : mentionMode === 'bookmarks' ? 'No bookmarks found'
-      : 'No history found';
-    mentionList.innerHTML = `<div class="mention-empty">${emptyText}</div>`;
-    return;
-  }
-  
-  mentionList.innerHTML = mentionItems.map((item, index) => {
-    const isSelected = contextTabs.some(ct => ct.url === item.url);
-    const isHighlighted = index === mentionHighlightIndex;
-    
-    let hostname = '';
-    try {
-      hostname = new URL(item.url).hostname.replace('www.', '');
-    } catch (e) {
-      hostname = item.url?.substring(0, 30) || '';
+    // Search bookmarks (only if filter provided)
+    if (filterLower.length >= 1) {
+      try {
+        const bookmarks = await chrome.bookmarks.search(filter || 'a');
+        results.bookmarks = bookmarks
+          .filter(b => b.url)
+          .slice(0, 3)
+          .map(b => {
+            let favicon = '';
+            try { favicon = `https://www.google.com/s2/favicons?domain=${new URL(b.url).hostname}&sz=32`; } catch {}
+            return {
+              id: `bookmark-${b.id}`,
+              title: b.title || b.url,
+              url: b.url,
+              favIconUrl: favicon,
+              type: 'bookmark'
+            };
+          });
+      } catch (e) { console.log('Bookmarks error:', e); }
+      
+      // Search history
+      try {
+        const history = await chrome.history.search({ text: filter, maxResults: 10 });
+        results.history = history
+          .filter(h => h.url && !results.tabs.some(t => t.url === h.url))
+          .slice(0, 3)
+          .map(h => {
+            let favicon = '';
+            try { favicon = `https://www.google.com/s2/favicons?domain=${new URL(h.url).hostname}&sz=32`; } catch {}
+            return {
+              id: `history-${h.id}`,
+              title: h.title || h.url,
+              url: h.url,
+              favIconUrl: favicon,
+              type: 'history'
+            };
+          });
+      } catch (e) { console.log('History error:', e); }
     }
     
-    return `
-      <div class="mention-item ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''}" 
-           data-index="${index}">
-        <img class="mention-favicon" 
-             src="${item.favIconUrl || `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}" 
-             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2394a3b8%22><rect width=%2224%22 height=%2224%22 rx=%224%22/></svg>'">
-        <div class="mention-item-content">
-          <div class="mention-item-title">${escapeHtml(item.title || 'Untitled')}</div>
-          <div class="mention-item-url">${hostname}</div>
-        </div>
-        <div class="mention-check">${Icons.check || ''}</div>
-      </div>
-    `;
-  }).join('');
+    // Flatten for navigation
+    mentionItems = [...results.tabs, ...results.bookmarks, ...results.history];
+    
+    // Render grouped
+    renderGroupedMentionList(results, filterLower);
+    
+  } catch (error) {
+    console.error('Error loading sources:', error);
+    mentionList.innerHTML = '<div class="mention-empty">Error loading sources</div>';
+  }
+}
+
+// Render grouped mention list (tabs, bookmarks, history)
+function renderGroupedMentionList(results, filter) {
+  if (!mentionList) return;
+  
+  let html = '';
+  let globalIndex = 0;
+  
+  // Tabs section
+  if (results.tabs.length > 0) {
+    html += `<div class="mention-section-header">${Icons.tabs || ''} Open Tabs</div>`;
+    results.tabs.forEach((item, i) => {
+      html += renderMentionItem(item, globalIndex++);
+    });
+  }
+  
+  // Bookmarks section
+  if (results.bookmarks.length > 0) {
+    html += `<div class="mention-section-header">${Icons.bookmark || ''} Bookmarks</div>`;
+    results.bookmarks.forEach((item, i) => {
+      html += renderMentionItem(item, globalIndex++);
+    });
+  }
+  
+  // History section
+  if (results.history.length > 0) {
+    html += `<div class="mention-section-header">${Icons.clock || ''} History</div>`;
+    results.history.forEach((item, i) => {
+      html += renderMentionItem(item, globalIndex++);
+    });
+  }
+  
+  // Empty state
+  if (mentionItems.length === 0) {
+    html = `<div class="mention-empty">${filter ? 'No matches found' : 'Type to search...'}</div>`;
+  }
+  
+  mentionList.innerHTML = html;
   
   // Add click handlers
   mentionList.querySelectorAll('.mention-item').forEach(el => {
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const index = parseInt(el.dataset.index);
       selectMentionItem(index);
     });
   });
+}
+
+// Render single mention item
+function renderMentionItem(item, index) {
+  const isSelected = contextTabs.some(ct => ct.url === item.url);
+  const isHighlighted = index === mentionHighlightIndex;
+  
+  let hostname = '';
+  try {
+    hostname = new URL(item.url).hostname.replace('www.', '');
+  } catch (e) {
+    hostname = item.url?.substring(0, 30) || '';
+  }
+  
+  return `
+    <div class="mention-item ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''}" 
+         data-index="${index}">
+      <img class="mention-favicon" 
+           src="${item.favIconUrl || `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}" 
+           onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2394a3b8%22><rect width=%2224%22 height=%2224%22 rx=%224%22/></svg>'">
+      <div class="mention-item-content">
+        <div class="mention-item-title">${escapeHtml(item.title || 'Untitled')}</div>
+        <div class="mention-item-url">${hostname}</div>
+      </div>
+      <div class="mention-check">${Icons.check || ''}</div>
+    </div>
+  `;
 }
 
 // Select an item from the mention list
@@ -694,10 +714,19 @@ async function selectMentionItem(index) {
     }
   }
   
-  // Update UI
-  renderMentionList();
+  // Clear the @query from input
+  if (mentionStartPos >= 0 && messageInput) {
+    const before = messageInput.value.substring(0, mentionStartPos);
+    const after = messageInput.value.substring(messageInput.selectionStart);
+    messageInput.value = before + after;
+    messageInput.selectionStart = messageInput.selectionEnd = before.length;
+  }
+  
+  // Hide popup and update UI
+  hideMentionPopup();
   updateContextChips();
   updatePageInfo();
+  messageInput?.focus();
 }
 
 // Update context chips display
@@ -748,43 +777,57 @@ function handleMentionKeydown(e) {
     case 'ArrowDown':
       e.preventDefault();
       mentionHighlightIndex = Math.min(mentionHighlightIndex + 1, mentionItems.length - 1);
-      renderMentionList();
+      updateMentionHighlight();
       scrollHighlightedIntoView();
       return true;
       
     case 'ArrowUp':
       e.preventDefault();
       mentionHighlightIndex = Math.max(mentionHighlightIndex - 1, 0);
-      renderMentionList();
+      updateMentionHighlight();
       scrollHighlightedIntoView();
       return true;
       
     case 'Enter':
-      e.preventDefault();
-      if (mentionItems[mentionHighlightIndex]) {
+    case 'Tab':
+      if (mentionItems.length > 0) {
+        e.preventDefault();
         selectMentionItem(mentionHighlightIndex);
+        return true;
       }
-      return true;
+      return false;
       
     case 'Escape':
       e.preventDefault();
+      // Clear the @query from input
+      if (mentionStartPos >= 0 && messageInput) {
+        const before = messageInput.value.substring(0, mentionStartPos);
+        const after = messageInput.value.substring(messageInput.selectionStart);
+        messageInput.value = before + after;
+        messageInput.selectionStart = messageInput.selectionEnd = before.length;
+      }
       hideMentionPopup();
-      messageInput?.focus();
       return true;
       
-    case 'Tab':
-      e.preventDefault();
-      if (e.shiftKey) {
-        mentionHighlightIndex = Math.max(mentionHighlightIndex - 1, 0);
-      } else {
-        mentionHighlightIndex = Math.min(mentionHighlightIndex + 1, mentionItems.length - 1);
+    case ' ':
+      // Space without selection closes popup
+      if (mentionQuery === '') {
+        hideMentionPopup();
+        return false; // Let the space be typed
       }
-      renderMentionList();
-      scrollHighlightedIntoView();
-      return true;
+      return false;
   }
   
   return false;
+}
+
+// Update highlight without full re-render
+function updateMentionHighlight() {
+  if (!mentionList) return;
+  
+  mentionList.querySelectorAll('.mention-item').forEach((el, i) => {
+    el.classList.toggle('highlighted', i === mentionHighlightIndex);
+  });
 }
 
 // Scroll highlighted item into view
@@ -795,95 +838,96 @@ function scrollHighlightedIntoView() {
   }
 }
 
+// Handle input changes for @ mention filtering
+function handleMentionInput() {
+  if (!mentionActive || mentionStartPos < 0) return;
+  
+  const cursorPos = messageInput.selectionStart;
+  const value = messageInput.value;
+  
+  // Get the query text after @
+  mentionQuery = value.substring(mentionStartPos, cursorPos);
+  
+  // If cursor moved before @, close popup
+  if (cursorPos < mentionStartPos) {
+    hideMentionPopup();
+    return;
+  }
+  
+  // Update search
+  mentionHighlightIndex = 0;
+  loadAllMentionSources(mentionQuery);
+}
+
 // Initialize mention popup event listeners
 function initMentionPopup() {
-  if (!mentionPopup) return;
+  if (!messageInput) return;
   
-  // Handle search input
-  if (mentionSearch) {
-    mentionSearch.addEventListener('input', (e) => {
-      const query = e.target.value;
-      mentionHighlightIndex = 0;
-      
-      if (mentionMode === 'tabs') {
-        loadMentionTabs(query);
-      } else if (mentionMode === 'bookmarks') {
-        searchBookmarks(query);
-      } else if (mentionMode === 'history') {
-        searchHistory(query);
-      }
-    });
-    
-    mentionSearch.addEventListener('keydown', handleMentionKeydown);
-  }
-  
-  // Bookmarks button
-  if (searchBookmarksBtn) {
-    searchBookmarksBtn.addEventListener('click', () => {
-      mentionMode = 'bookmarks';
-      mentionHighlightIndex = 0;
-      searchBookmarksBtn.classList.add('active');
-      searchHistoryBtn?.classList.remove('active');
-      
-      if (mentionTitle) mentionTitle.textContent = 'Bookmarks';
-      if (mentionSearch) {
-        mentionSearch.placeholder = 'Search bookmarks...';
-        mentionSearch.value = '';
-        mentionSearch.focus();
-      }
-      mentionList.innerHTML = '<div class="mention-empty">Type to search bookmarks...</div>';
-      mentionItems = [];
-    });
-  }
-  
-  // History button
-  if (searchHistoryBtn) {
-    searchHistoryBtn.addEventListener('click', () => {
-      mentionMode = 'history';
-      mentionHighlightIndex = 0;
-      searchHistoryBtn.classList.add('active');
-      searchBookmarksBtn?.classList.remove('active');
-      
-      if (mentionTitle) mentionTitle.textContent = 'History';
-      if (mentionSearch) {
-        mentionSearch.placeholder = 'Search history...';
-        mentionSearch.value = '';
-        mentionSearch.focus();
-      }
-      mentionList.innerHTML = '<div class="mention-empty">Type to search history...</div>';
-      mentionItems = [];
-    });
-  }
-  
-  // Close when clicking outside
+  // Close popup when clicking outside
   document.addEventListener('click', (e) => {
-    if (mentionActive && 
+    if (mentionActive && mentionPopup && 
         !mentionPopup.contains(e.target) && 
         e.target !== messageInput) {
       hideMentionPopup();
     }
   });
   
-  // Handle @ in main input
-  if (messageInput) {
-    messageInput.addEventListener('input', (e) => {
-      const value = e.target.value;
-      const cursorPos = e.target.selectionStart;
-      
-      // Check if @ was just typed
-      if (value[cursorPos - 1] === '@') {
-        // Remove the @ from input
-        e.target.value = value.slice(0, cursorPos - 1) + value.slice(cursorPos);
-        showMentionPopup();
-      }
-    });
+  // Handle @ trigger and filtering in main input
+  messageInput.addEventListener('input', (e) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart;
     
-    messageInput.addEventListener('keydown', (e) => {
-      if (mentionActive && handleMentionKeydown(e)) {
+    if (mentionActive) {
+      // Already in mention mode - update filter
+      // But close if user is typing @agent
+      const textAfterAt = value.substring(mentionStartPos).toLowerCase();
+      if (textAfterAt.startsWith('agent')) {
+        hideMentionPopup();
         return;
       }
-    });
-  }
+      handleMentionInput();
+    } else {
+      // Check if @ was just typed
+      if (cursorPos > 0 && value[cursorPos - 1] === '@') {
+        // Check it's at start or after space
+        if (cursorPos === 1 || value[cursorPos - 2] === ' ' || value[cursorPos - 2] === '\n') {
+          // Don't show popup if it looks like @agent command
+          const remainingText = value.substring(cursorPos).toLowerCase();
+          if (!remainingText.startsWith('agent')) {
+            showMentionPopup(cursorPos); // Start after @
+          }
+        }
+      }
+    }
+  });
+  
+  // Handle keyboard navigation
+  messageInput.addEventListener('keydown', (e) => {
+    if (mentionActive) {
+      if (handleMentionKeydown(e)) {
+        return;
+      }
+      
+      // Backspace might close popup if query is empty
+      if (e.key === 'Backspace') {
+        setTimeout(() => {
+          if (messageInput.selectionStart < mentionStartPos) {
+            hideMentionPopup();
+          } else {
+            handleMentionInput();
+          }
+        }, 0);
+      }
+    }
+  });
+}
+
+// Legacy compatibility - remove old button handlers
+if (searchBookmarksBtn) {
+  searchBookmarksBtn.style.display = 'none';
+}
+if (searchHistoryBtn) {
+  searchHistoryBtn.style.display = 'none';
 }
 
 // Initialize mention popup
@@ -1374,6 +1418,25 @@ async function sendMessage(messageText = null) {
       addMessage('user', text);
     }
     await command.handler(command.args);
+    return;
+  }
+  
+  // Check for @agent command
+  if (text.toLowerCase().startsWith('@agent ')) {
+    messageInput.value = '';
+    document.getElementById('commandHint').style.display = 'none';
+    
+    const agentTask = text.replace(/^@agent\s+/i, '').trim();
+    if (!agentTask) {
+      addMessage('assistant', 'Please provide a task for the agent. Example: `@agent search for hotels in bangalore`');
+      return;
+    }
+    
+    // Show user message
+    addMessage('user', text);
+    
+    // Run agent mode
+    await runAgentMode(agentTask);
     return;
   }
   
@@ -2589,6 +2652,68 @@ function formatDate(isoString) {
   if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
   
   return date.toLocaleDateString();
+}
+
+// ==================== AGENT MODE ====================
+
+// Run the autonomous agent
+async function runAgentMode(task) {
+  // Check if AgentMode is available
+  if (typeof AgentController === 'undefined' || typeof AgentUI === 'undefined') {
+    addMessage('assistant', '❌ Agent mode is not available. Please reload the extension.', true);
+    return;
+  }
+  
+  // Check settings
+  if (!settings) {
+    addMessage('assistant', '❌ Please configure your API settings first.', true);
+    return;
+  }
+  
+  // Create AI service for agent
+  const aiService = new AIService(settings);
+  
+  // Initialize UI
+  AgentUI.init('agentStatusContainer');
+  AgentUI.show(task);
+  
+  // Create and store controller globally (for cancel access)
+  const controller = new AgentController(aiService, (update) => {
+    AgentUI.update(update);
+    
+    // Log progress to console for debugging
+    console.log('[Agent]', update.status, update.message);
+  });
+  
+  window.agentController = controller;
+  
+  try {
+    // Run the agent
+    const result = await controller.run(task);
+    
+    // Add result to chat
+    if (result) {
+      addMessage('assistant', result);
+    }
+    
+  } catch (error) {
+    console.error('Agent error:', error);
+    addMessage('assistant', `❌ Agent encountered an error: ${error.message}`, true);
+  } finally {
+    window.agentController = null;
+    
+    // Hide UI after a delay
+    setTimeout(() => {
+      AgentUI.hide();
+    }, 2000);
+  }
+}
+
+// Cancel running agent
+function cancelAgent() {
+  if (window.agentController) {
+    window.agentController.cancel();
+  }
 }
 
 // ==================== ICON INITIALIZATION ====================

@@ -85,10 +85,11 @@
 }
 
 body {
-  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 14px;
+  text-rendering: optimizeLegibility;
+  font-size: 15px;
   background: var(--bg-primary);
   color: var(--text-primary);
   margin: 0;
@@ -126,7 +127,7 @@ body {
   border: none;
   border-radius: 8px;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -463,7 +464,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   font-family: inherit;
 }
@@ -537,7 +538,7 @@ body {
 }
 
 .todo-text, .note-text, .memory-text {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
   line-height: 1.5;
@@ -549,7 +550,7 @@ body {
   align-items: center;
   gap: 8px;
   margin-top: 6px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 
@@ -1358,6 +1359,8 @@ body {
 .message-text {
   word-wrap: break-word;
   font-weight: 450;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 /* Markdown styles in messages */
@@ -1615,7 +1618,7 @@ body {
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--accent-primary);
   cursor: pointer;
@@ -1938,6 +1941,31 @@ body {
   font-size: 12px;
 }
 
+.mention-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-top: 1px solid var(--border-light);
+  margin-top: 4px;
+}
+
+.mention-section-header:first-child {
+  border-top: none;
+  margin-top: 0;
+}
+
+.mention-section-header svg {
+  width: 12px;
+  height: 12px;
+  opacity: 0.7;
+}
+
 /* Context Chips */
 .context-chips {
   display: flex;
@@ -2032,7 +2060,7 @@ body {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   font-family: inherit;
   resize: none;

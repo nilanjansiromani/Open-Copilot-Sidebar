@@ -73,6 +73,111 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true; // Will respond asynchronously
   }
+  
+  // ==================== AGENT MODE HANDLERS ====================
+  
+  // Create a background tab (for agent browsing)
+  if (request.action === 'agent_createTab') {
+    chrome.tabs.create({
+      url: request.url,
+      active: false  // Open in background
+    }).then(tab => {
+      sendResponse({ success: true, tabId: tab.id, tab });
+    }).catch(error => {
+      sendResponse({ success: false, error: error.message });
+    });
+    return true;
+  }
+  
+  // Close a tab (for agent cleanup)
+  if (request.action === 'agent_closeTab') {
+    chrome.tabs.remove(request.tabId).then(() => {
+      sendResponse({ success: true });
+    }).catch(error => {
+      sendResponse({ success: false, error: error.message });
+    });
+    return true;
+  }
+  
+  // Wait for tab to load completely
+  if (request.action === 'agent_waitForTab') {
+    const tabId = request.tabId;
+    const timeout = request.timeout || 10000;
+    
+    const checkComplete = () => {
+      return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          chrome.tabs.onUpdated.removeListener(listener);
+          reject(new Error('Tab load timeout'));
+        }, timeout);
+        
+        const listener = (updatedTabId, changeInfo, tab) => {
+          if (updatedTabId === tabId && changeInfo.status === 'complete') {
+            chrome.tabs.onUpdated.removeListener(listener);
+            clearTimeout(timeoutId);
+            // Give extra time for dynamic content
+            setTimeout(() => resolve({ success: true, tab }), 1500);
+          }
+        };
+        
+        chrome.tabs.onUpdated.addListener(listener);
+        
+        // Check if already complete
+        chrome.tabs.get(tabId).then(tab => {
+          if (tab.status === 'complete') {
+            chrome.tabs.onUpdated.removeListener(listener);
+            clearTimeout(timeoutId);
+            setTimeout(() => resolve({ success: true, tab }), 1500);
+          }
+        });
+      });
+    };
+    
+    checkComplete()
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+  
+  // Extract Google AI Overview
+  if (request.action === 'agent_extractAIOverview') {
+    chrome.scripting.executeScript({
+      target: { tabId: request.tabId },
+      func: extractGoogleAIOverview
+    }).then(results => {
+      sendResponse({ success: true, content: results[0]?.result || null });
+    }).catch(error => {
+      sendResponse({ success: false, error: error.message });
+    });
+    return true;
+  }
+  
+  // Extract Google search results
+  if (request.action === 'agent_extractSearchResults') {
+    chrome.scripting.executeScript({
+      target: { tabId: request.tabId },
+      func: extractGoogleSearchResults,
+      args: [request.limit || 5]
+    }).then(results => {
+      sendResponse({ success: true, results: results[0]?.result || [] });
+    }).catch(error => {
+      sendResponse({ success: false, error: error.message });
+    });
+    return true;
+  }
+  
+  // Extract page content for agent
+  if (request.action === 'agent_extractContent') {
+    chrome.scripting.executeScript({
+      target: { tabId: request.tabId },
+      func: extractPageForAgent
+    }).then(results => {
+      sendResponse({ success: true, content: results[0]?.result || '' });
+    }).catch(error => {
+      sendResponse({ success: false, error: error.message });
+    });
+    return true;
+  }
 });
 
 // Extract content from a specific tab
@@ -255,6 +360,126 @@ function htmlToMarkdownFunction(html) {
   
   // Limit markdown length
   return markdown.substring(0, 50000);
+}
+
+// ==================== AGENT MODE HELPER FUNCTIONS ====================
+
+// Extract Google AI Overview from AI search results
+function extractGoogleAIOverview() {
+  // Try multiple selectors for AI overview content
+  const selectors = [
+    '[data-attrid="AIOverview"]',           // Main AI overview container
+    '.wDYxhc[data-md]',                      // AI response container
+    '[jsname="WbKHeb"]',                     // AI generated content
+    '.kno-rdesc',                            // Knowledge panel description
+    '.IZ6rdc',                               // Featured snippet
+    '.hgKElc',                               // Answer box
+    '[data-tts="answers"]',                  // Direct answers
+    '.xpdopen .kp-blk',                      // Expanded knowledge panel
+    'div[data-async-token] .wDYxhc',         // Async loaded AI content
+    '.VjDLd',                                // AI summary block
+    '.mod[data-md]'                          // Module with markdown
+  ];
+  
+  let aiContent = '';
+  
+  for (const selector of selectors) {
+    const element = document.querySelector(selector);
+    if (element) {
+      const text = element.innerText?.trim();
+      if (text && text.length > 50) {
+        aiContent = text;
+        break;
+      }
+    }
+  }
+  
+  // If no AI overview found, try to get the first substantial text block
+  if (!aiContent) {
+    const mainContent = document.querySelector('#main');
+    if (mainContent) {
+      const textBlocks = mainContent.querySelectorAll('div[data-snf], .VwiC3b, .yXK7lf');
+      for (const block of textBlocks) {
+        const text = block.innerText?.trim();
+        if (text && text.length > 100) {
+          aiContent = text;
+          break;
+        }
+      }
+    }
+  }
+  
+  // Truncate if too long
+  if (aiContent && aiContent.length > 2000) {
+    aiContent = aiContent.substring(0, 2000) + '...';
+  }
+  
+  return aiContent || null;
+}
+
+// Extract Google search results from a search page
+function extractGoogleSearchResults(limit = 5) {
+  const results = [];
+  const searchItems = document.querySelectorAll('div.g');
+  
+  for (let i = 0; i < Math.min(searchItems.length, limit); i++) {
+    const item = searchItems[i];
+    const titleEl = item.querySelector('h3');
+    const linkEl = item.querySelector('a');
+    const snippetEl = item.querySelector('div[data-snf], div[data-sncf], .VwiC3b');
+    
+    if (titleEl && linkEl && linkEl.href) {
+      results.push({
+        title: titleEl.textContent || '',
+        url: linkEl.href,
+        snippet: snippetEl ? snippetEl.textContent : ''
+      });
+    }
+  }
+  
+  return results;
+}
+
+// Extract page content optimized for agent analysis
+function extractPageForAgent() {
+  // Clone body to avoid modifying the actual page
+  const clone = document.body.cloneNode(true);
+  
+  // Remove non-content elements
+  const removeSelectors = [
+    'script', 'style', 'noscript', 'iframe', 
+    'nav', 'footer', 'header', 'aside',
+    '.ad', '.ads', '.advertisement', '[class*="cookie"]', 
+    '[class*="popup"]', '[class*="modal"]', '[class*="banner"]',
+    '[role="navigation"]', '[role="banner"]', '[role="contentinfo"]'
+  ];
+  
+  removeSelectors.forEach(sel => {
+    try {
+      clone.querySelectorAll(sel).forEach(el => el.remove());
+    } catch (e) {}
+  });
+  
+  // Get text content
+  let text = clone.innerText || clone.textContent || '';
+  
+  // Clean up whitespace
+  text = text
+    .replace(/\s+/g, ' ')
+    .replace(/\n\s*\n/g, '\n\n')
+    .trim();
+  
+  // Truncate to reasonable size
+  const maxLength = 30000;
+  if (text.length > maxLength) {
+    text = text.substring(0, maxLength) + '\n\n[Content truncated...]';
+  }
+  
+  return {
+    title: document.title,
+    url: window.location.href,
+    content: text
+  };
 }
 
 // Enable side panel for all URLs
