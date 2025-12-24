@@ -91,12 +91,46 @@ Contributions are welcome! Please open issues and PRs with clear descriptions an
 
 No `LICENSE` file found in this repository. Please add a license (for example, MIT) or discuss desired licensing via an issue.
 
-## Docs
+## Documentation
 
-- Documentation Index: `docs/README.md`
-- User Guide: `docs/User_Guide.md`
-- Agent mode details: `docs/AGENT_MODE.md`
+**Full documentation:** [docs/README.md](docs/README.md)
 
----
+### Quick Navigation by Role:
 
-User Guide: `docs/User_Guide.md` contains step-by-step usage and troubleshooting guidance.
+**👤 I'm a User** — Want to install and use the extension?
+- Start here: [User Guide](docs/User_Guide.md)
+- Then read: [Features Overview](docs/FEATURES_USER.md)
+- Learn about: [@agent mode](docs/AGENT_MODE.md)
+
+**👨‍💻 I'm a Developer** — Want to understand how it works?
+- Start here: [Architecture Deep Dive](docs/ARCHITECTURE_DEEP_DIVE.md)
+- Then read: [Code Walkthrough](docs/CODE_WALKTHROUGH.md) — Real code examples
+- Reference: [API Reference](docs/API_REFERENCE.md) — All method signatures
+- Deep dive: [Agent Deep Dive](docs/AGENT_DEEP_DIVE.md) — Agent internals
+
+**🔧 I'm Extending It** — Want to add features or custom tools?
+- Setup: [Developer Guide](docs/DEVELOPER_GUIDE.md)
+- Extend Agent: [Agent Deep Dive](docs/AGENT_DEEP_DIVE.md#extending-with-custom-tools)
+- APIs: [API Reference](docs/API_REFERENCE.md)
+
+**Documentation Levels:**
+- **Level 1:** User-facing (how to install and use)
+- **Level 2:** Admin/features (settings, troubleshooting)
+- **Level 3:** Implementation (code examples, APIs, system design) ← Most detailed
+
+### Complete Documentation Index:
+- [docs/README.md](docs/README.md) — Full index with quick links by task
+- [docs/User_Guide.md](docs/User_Guide.md) — Installation & usage guide
+- [docs/FEATURES_USER.md](docs/FEATURES_USER.md) — User-facing features
+- [docs/WHAT_IS_SPECIAL.md](docs/WHAT_IS_SPECIAL.md) — Key differentiators
+- [docs/USE_CASES.md](docs/USE_CASES.md) — Practical examples
+- [docs/SETTINGS_MEMORY.md](docs/SETTINGS_MEMORY.md) — Configuration guide
+- [docs/AGENT_MODE.md](docs/AGENT_MODE.md) — Agent mode overview
+- [docs/TECHNICAL.md](docs/TECHNICAL.md) — Technical architecture
+- [docs/FEATURES.md](docs/FEATURES.md) — Complete feature list with file mappings
+- [docs/ARCHITECTURE_DEEP_DIVE.md](docs/ARCHITECTURE_DEEP_DIVE.md) — System design & component breakdown
+- [docs/CODE_WALKTHROUGH.md](docs/CODE_WALKTHROUGH.md) — Step-by-step code examples
+- [docs/API_REFERENCE.md](docs/API_REFERENCE.md) — Complete API documentation
+- [docs/AGENT_DEEP_DIVE.md](docs/AGENT_DEEP_DIVE.md) — Agent implementation details
+- [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — Development setup & workflow
+- [docs/USING_OSAURUS_FOUNDATION.md](docs/USING_OSAURUS_FOUNDATION.md) — Apple Foundation models guide
