@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenCopilot Dashboard</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div>
+        <h1>⚡ OpenCopilot Dashboard</h1>
+        <p>Configure your AI services and customize quick prompts</p>
+      </div>
+      <div class="header-actions">
+        <div class="kbd-hint">
+          <span class="kbd-label">AI Assistant:</span>
+          <span class="kbd">⌘</span> + <span class="kbd">Shift</span> + <span class="kbd">O</span>
+        </div>
+        <div class="kbd-hint">
+          <span class="kbd-label">Settings:</span>
+          <span class="kbd">⌘</span> + <span class="kbd">,</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-container">
+    <!-- Status Messages -->
+    <div id="statusMessage"></div>
+
+    <!-- Connection Panel -->
+    <section class="dashboard-section">
+      <div class="section-title">
+        <h2>🔌 Connection</h2>
+        <p>Select and configure your AI service provider</p>
+      </div>
+
+      <div class="connection-grid">
+        <div class="service-selector-dashboard">
+          <label class="service-card-dashboard" for="groq">
+            <input type="radio" id="groq" name="service" value="groq" checked>
+            <div class="service-content">
+              <div class="service-icon-large">🚀</div>
+              <div class="service-name">Groq</div>
+            </div>
+          </label>
+          
+          <label class="service-card-dashboard" for="gemini">
+            <input type="radio" id="gemini" name="service" value="gemini">
+            <div class="service-content">
+              <div class="service-icon-large">✨</div>
+              <div class="service-name">Gemini</div>
+            </div>
+          </label>
+          
+          <label class="service-card-dashboard" for="ollama">
+            <input type="radio" id="ollama" name="service" value="ollama">
+            <div class="service-content">
+              <div class="service-icon-large">🦙</div>
+              <div class="service-name">Ollama</div>
+            </div>
+          </label>
+          
+          <label class="service-card-dashboard" for="lmstudio">
+            <input type="radio" id="lmstudio" name="service" value="lmstudio">
+            <div class="service-content">
+              <div class="service-icon-large">🖥️</div>
+              <div class="service-name">LM Studio</div>
+            </div>
+          </label>
+          
+          <label class="service-card-dashboard" for="osaurus">
+            <input type="radio" id="osaurus" name="service" value="osaurus">
+            <div class="service-content">
+              <div class="service-icon-large">🦖</div>
+              <div class="service-name">Osaurus</div>
+            </div>
+          </label>
+          
+          <label class="service-card-dashboard" for="openrouter">
+            <input type="radio" id="openrouter" name="service" value="openrouter">
+            <div class="service-content">
+              <div class="service-icon-large">🌐</div>
+              <div class="service-name">OpenRouter</div>
+            </div>
+          </label>
+        </div>
+
+        <!-- Configuration Forms -->
+        <div class="config-panel">
+          <!-- Groq Section -->
+          <div id="groqSection" class="section-config active">
+            <h3 class="config-title">Groq Configuration</h3>
+            
+            <div class="form-group">
+              <label for="groqApiKey" class="form-label">API Key</label>
+              <input type="password" class="form-control-dashboard" id="groqApiKey" placeholder="Enter your Groq API key">
+              <div class="form-help">
+                Get your API key from <a href="https://console.groq.com/keys" target="_blank">Groq Console</a>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="groqModel" class="form-label">Model Name</label>
+              <input type="text" class="form-control-dashboard" id="groqModel" placeholder="e.g., mixtral-8x7b-32768">
+              <div class="form-help">
+                Popular models: mixtral-8x7b-32768, llama2-70b-4096, gemma-7b-it
+              </div>
+            </div>
+          </div>
+          
+          <!-- Gemini Section -->
+          <div id="geminiSection" class="section-config">
+            <h3 class="config-title">Google Gemini Configuration</h3>
+            
+            <div class="form-group">
+              <label for="geminiApiKey" class="form-label">API Key</label>
+              <input type="password" class="form-control-dashboard" id="geminiApiKey" placeholder="Enter your Gemini API key">
+              <div class="form-help">
+                Get your API key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="geminiModel" class="form-label">Model Name</label>
+              <input type="text" class="form-control-dashboard" id="geminiModel" placeholder="e.g., gemini-pro">
+              <div class="form-help">
+                Available models: gemini-pro, gemini-pro-vision
+              </div>
+            </div>
+          </div>
+          
+          <!-- Ollama Section -->
+          <div id="ollamaSection" class="section-config">
+            <h3 class="config-title">Ollama Configuration</h3>
+            
+            <div class="alert-callout alert-warning">
+              <div class="alert-icon">⚠️</div>
+              <div class="alert-content">
+                <div class="alert-title">Ollama Configuration Required</div>
+                <div class="alert-text">
+                  Ollama does not allow requests from Chrome Extensions by default. 
+                  <br><br>
+                  <strong>To enable:</strong> Add the following to your <code>~/.zshrc</code> or <code>~/.bashrc</code> file:
+                  <br>
+                  <code class="code-block">launchctl setenv OLLAMA_ORIGINS "*"</code>
+                  <br><br>
+                  Then restart Ollama for the changes to take effect.
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="ollamaUrl" class="form-label">Ollama URL</label>
+              <input type="text" class="form-control-dashboard" id="ollamaUrl" placeholder="http://localhost:11434" value="http://localhost:11434">
+              <div class="form-help">
+                Make sure Ollama is running locally. Download from <a href="https://ollama.ai" target="_blank">ollama.ai</a>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="ollamaModel" class="form-label">
+                Model Name
+                <button type="button" class="btn-icon" id="refreshOllamaModels" title="Refresh models list">
+                  🔄
+                </button>
+              </label>
+              <select class="form-control-dashboard" id="ollamaModel">
+                <option value="">Loading models...</option>
+              </select>
+              <div class="form-help" id="ollamaModelHelp">
+                Select a model from your local Ollama instance
+              </div>
+            </div>
+          </div>
+          
+          <!-- LM Studio Section -->
+          <div id="lmstudioSection" class="section-config">
+            <h3 class="config-title">LM Studio Configuration</h3>
+            
+            <div class="alert-callout alert-info">
+              <div class="alert-icon">ℹ️</div>
+              <div class="alert-content">
+                <div class="alert-title">LM Studio Local AI</div>
+                <div class="alert-text">
+                  LM Studio runs AI models locally on your computer with a beautiful UI.
+                  <br><br>
+                  <strong>To use:</strong>
+                  <ol style="margin: 10px 0; padding-left: 20px;">
+                    <li>Download LM Studio from <a href="https://lmstudio.ai" target="_blank">lmstudio.ai</a></li>
+                    <li>Load a model in LM Studio</li>
+                    <li>Start the local server (usually on port 1234)</li>
+                    <li>Enter the server URL below</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="lmstudioUrl" class="form-label">LM Studio URL</label>
+              <input type="text" class="form-control-dashboard" id="lmstudioUrl" placeholder="http://localhost:1234" value="http://localhost:1234">
+              <div class="form-help">
+                Default is http://localhost:1234. Make sure LM Studio server is running.
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="lmstudioModel" class="form-label">
+                Model Name
+                <button type="button" class="btn-icon" id="refreshLMStudioModels" title="Refresh models list">
+                  🔄
+                </button>
+              </label>
+              <select class="form-control-dashboard" id="lmstudioModel">
+                <option value="local-model">local-model (default)</option>
+              </select>
+              <div class="form-help" id="lmstudioModelHelp">
+                Select the loaded model from your LM Studio instance
+              </div>
+            </div>
+          </div>
+          
+          <!-- Osaurus Section -->
+          <div id="osaurusSection" class="section-config">
+            <h3 class="config-title">Osaurus Configuration</h3>
+            
+            <div class="alert-callout alert-info">
+              <div class="alert-icon">🦖</div>
+              <div class="alert-content">
+                <div class="alert-title">Osaurus - Native macOS LLM Server</div>
+                <div class="alert-text">
+                  Osaurus runs AI models locally on your Mac with Apple Silicon optimization.
+                  <br><br>
+                  <strong>Installation:</strong>
+                  <br>
+                  <code class="code-block">brew install dinoki-labs/tap/osaurus</code>
+                  <br><br>
+                  <strong>Start Osaurus:</strong>
+                  <br>
+                  <code class="code-block">osaurus serve</code>
+                  <br><br>
+                  <strong>Apple Foundation Models:</strong>
+                  <br>
+                  Use model name <code>foundation</code> to access Apple's system models (macOS 26+).
+                  <br><br>
+                  Learn more at <a href="https://docs.osaurus.ai" target="_blank">docs.osaurus.ai</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="osaurusUrl" class="form-label">Osaurus URL</label>
+              <input type="text" class="form-control-dashboard" id="osaurusUrl" placeholder="http://127.0.0.1:1337" value="http://127.0.0.1:1337">
+              <div class="form-help">
+                Default is http://127.0.0.1:1337. Make sure Osaurus server is running.
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="osaurusModel" class="form-label">
+                Model Name
+                <button type="button" class="btn-icon" id="refreshOsaurusModels" title="Refresh models list">
+                  🔄
+                </button>
+              </label>
+              <select class="form-control-dashboard" id="osaurusModel">
+                <option value="foundation">foundation (Apple System Model)</option>
+              </select>
+              <div class="form-help" id="osaurusModelHelp">
+                Select a model from your Osaurus instance
+              </div>
+            </div>
+          </div>
+          
+          <!-- OpenRouter Section -->
+          <div id="openrouterSection" class="section-config">
+            <h3 class="config-title">OpenRouter Configuration</h3>
+            
+            <div class="form-group">
+              <label for="openRouterApiKey" class="form-label">API Key</label>
+              <input type="password" class="form-control-dashboard" id="openRouterApiKey" placeholder="Enter your OpenRouter API key">
+              <div class="form-help">
+                Get your API key from <a href="https://openrouter.ai/keys" target="_blank">OpenRouter</a>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="openRouterModel" class="form-label">Model Name</label>
+              <input type="text" class="form-control-dashboard" id="openRouterModel" placeholder="e.g., anthropic/claude-3.5-sonnet">
+              <div class="form-help">
+                Popular models: anthropic/claude-3.5-sonnet, openai/gpt-4-turbo, google/gemini-pro
+              </div>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="btn-secondary" id="resetBtn">Reset to Defaults</button>
+            <button class="btn-primary" id="saveBtn">Save Connection</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pills Management Panel -->
+    <section class="dashboard-section">
+      <div class="section-title">
+        <h2>💊 Quick Prompt Pills</h2>
+        <p>Customize the quick prompt buttons that appear in the sidebar</p>
+      </div>
+
+      <div class="pills-container">
+        <div class="pills-header">
+          <button class="btn-add-pill" id="addPillBtn">
+            <span class="plus-icon">+</span>
+            Add New Pill
+          </button>
+          <button class="btn-reset-pills" id="resetPillsBtn">
+            ↺ Reset to Defaults
+          </button>
+        </div>
+
+        <div id="pillsList" class="pills-list">
+          <!-- Pills will be dynamically generated here -->
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Edit Pill Modal -->
+  <div id="pillModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Edit Pill</h3>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="pillKey" class="form-label">Pill ID (unique identifier)</label>
+          <input type="text" class="form-control-dashboard" id="pillKey" placeholder="e.g., tldr, summarize">
+          <div class="form-help">Use lowercase letters and underscores only</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="pillLabel" class="form-label">Button Label</label>
+          <input type="text" class="form-control-dashboard" id="pillLabel" placeholder="e.g., TLDR, Summarize">
+          <div class="form-help">The text displayed on the button</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="pillPrompt" class="form-label">Prompt Text</label>
+          <textarea class="form-control-dashboard textarea-tall" id="pillPrompt" rows="5" placeholder="The prompt that will be sent when this pill is clicked"></textarea>
+          <div class="form-help">This is the message sent to the AI</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelPillBtn">Cancel</button>
+        <button class="btn-primary" id="savePillBtn">Save Pill</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="settings.js"></script>
+</body>
+</html>

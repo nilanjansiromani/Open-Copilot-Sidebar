@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenCopilot</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div class="sidebar-container">
+    <!-- Settings Confirmation -->
+    <div class="settings-confirmation" id="settingsConfirmation"></div>
+    
+    <!-- View Tabs -->
+    <div class="view-tabs">
+      <button class="view-tab active" data-view="chat">
+        <span class="tab-icon" id="iconChat"></span>
+        <span class="tab-label">Chat</span>
+      </button>
+      <button class="view-tab" data-view="todos">
+        <span class="tab-icon" id="iconTodos"></span>
+        <span class="tab-label">Todos</span>
+        <span class="tab-badge" id="todosBadge" style="display: none;">0</span>
+      </button>
+      <button class="view-tab" data-view="notes">
+        <span class="tab-icon" id="iconNotes"></span>
+        <span class="tab-label">Notes</span>
+        <span class="tab-badge" id="notesBadge" style="display: none;">0</span>
+      </button>
+      <button class="view-tab" data-view="memory">
+        <span class="tab-icon" id="iconMemory"></span>
+        <span class="tab-label">Memory</span>
+      </button>
+      <div class="view-tabs-spacer"></div>
+      <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">
+        <span class="theme-icon" id="themeIconContainer"></span>
+      </button>
+    </div>
+    
+    <!-- Tabs Panel (Slide-over) -->
+    <div class="tabs-panel" id="tabsPanel">
+      <div class="tabs-panel-header">
+        <h3><span class="header-icon-inline" id="iconTabsHeader"></span> Add Tabs to Context</h3>
+        <button class="tabs-panel-close" id="tabsPanelClose"><span id="iconTabsClose"></span></button>
+      </div>
+      <div class="tabs-panel-content">
+        <p class="tabs-panel-description">Select tabs to include in your conversation context. The AI will be able to answer questions about all selected tabs.</p>
+        <div class="tabs-search-wrapper">
+          <input type="text" class="tabs-search" id="tabsSearch" placeholder="Search tabs...">
+        </div>
+        <div class="tabs-list" id="tabsList">
+          <!-- Tabs will be dynamically loaded here -->
+        </div>
+      </div>
+      <div class="tabs-panel-footer">
+        <button class="btn-secondary" id="clearTabsBtn">Clear All</button>
+        <button class="btn-primary" id="addSelectedTabsBtn">Add Selected</button>
+      </div>
+    </div>
+    
+    <!-- Inline Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+      <div class="settings-header">
+        <h3><span class="header-icon-inline" id="iconSettingsHeader"></span> Settings</h3>
+        <button class="settings-close" id="settingsPanelClose"><span id="iconSettingsClose"></span></button>
+      </div>
+      
+      <div class="settings-group">
+        <label class="settings-label">AI Service</label>
+        <select class="settings-select" id="serviceSelect">
+          <option value="groq">Groq</option>
+          <option value="gemini">Gemini</option>
+          <option value="ollama">Ollama (Local)</option>
+          <option value="lmstudio">LM Studio (Local)</option>
+          <option value="osaurus">Osaurus (Local)</option>
+          <option value="openrouter">OpenRouter</option>
+        </select>
+      </div>
+      
+      <div class="settings-divider"></div>
+      
+      <!-- Groq Settings -->
+      <div id="groqSettings" class="service-settings">
+        <div class="settings-group">
+          <label class="settings-label">Groq API Key</label>
+          <input type="password" class="settings-input" id="groqApiKeyInput" placeholder="Enter API key">
+          <div class="settings-help">Get your key from console.groq.com</div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Model</label>
+          <input type="text" class="settings-input" id="groqModelInput" placeholder="mixtral-8x7b-32768">
+        </div>
+      </div>
+      
+      <!-- Gemini Settings -->
+      <div id="geminiSettings" class="service-settings" style="display: none;">
+        <div class="settings-group">
+          <label class="settings-label">Gemini API Key</label>
+          <input type="password" class="settings-input" id="geminiApiKeyInput" placeholder="Enter API key">
+          <div class="settings-help">Get your key from makersuite.google.com</div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Model</label>
+          <input type="text" class="settings-input" id="geminiModelInput" placeholder="gemini-pro">
+        </div>
+      </div>
+      
+      <!-- Ollama Settings -->
+      <div id="ollamaSettings" class="service-settings" style="display: none;">
+        <div class="settings-warning">
+          <span class="settings-warning-icon" id="iconWarningOllama"></span> <strong>Setup Required:</strong> Add <code>launchctl setenv OLLAMA_ORIGINS "*"</code> to ~/.zshrc and restart Ollama
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Ollama URL</label>
+          <input type="text" class="settings-input" id="ollamaUrlInput" placeholder="http://localhost:11434">
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">
+            Model
+            <button type="button" class="settings-refresh-btn" id="refreshOllamaModels" title="Refresh models">🔄</button>
+          </label>
+          <select class="settings-select" id="ollamaModelInput">
+            <option value="">Loading models...</option>
+          </select>
+          <div class="settings-help" id="ollamaModelHelp">Select a model from your local Ollama instance</div>
+        </div>
+      </div>
+      
+      <!-- LM Studio Settings -->
+      <div id="lmstudioSettings" class="service-settings" style="display: none;">
+        <div class="settings-info">
+          <span class="settings-info-icon" id="iconInfoLMStudio"></span> <strong>LM Studio:</strong> Start the local server in LM Studio app (default port: 1234)
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">LM Studio URL</label>
+          <input type="text" class="settings-input" id="lmstudioUrlInput" placeholder="http://localhost:1234">
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">
+            Model
+            <button type="button" class="settings-refresh-btn" id="refreshLMStudioModels" title="Refresh models">🔄</button>
+          </label>
+          <select class="settings-select" id="lmstudioModelInput">
+            <option value="local-model">local-model (default)</option>
+          </select>
+          <div class="settings-help" id="lmstudioModelHelp">Select the loaded model from LM Studio</div>
+        </div>
+      </div>
+      
+      <!-- Osaurus Settings -->
+      <div id="osaurusSettings" class="service-settings" style="display: none;">
+        <div class="settings-info">
+          <strong>Osaurus:</strong> Native macOS LLM server. Install: <code>brew install dinoki-labs/tap/osaurus</code>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Osaurus URL</label>
+          <input type="text" class="settings-input" id="osaurusUrlInput" placeholder="http://127.0.0.1:1337">
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">
+            Model
+            <button type="button" class="settings-refresh-btn" id="refreshOsaurusModels" title="Refresh models">🔄</button>
+          </label>
+          <select class="settings-select" id="osaurusModelInput">
+            <option value="foundation">foundation (Apple System Model)</option>
+          </select>
+          <div class="settings-help" id="osaurusModelHelp">Select a model from Osaurus</div>
+        </div>
+      </div>
+      
+      <!-- OpenRouter Settings -->
+      <div id="openrouterSettings" class="service-settings" style="display: none;">
+        <div class="settings-group">
+          <label class="settings-label">OpenRouter API Key</label>
+          <input type="password" class="settings-input" id="openRouterApiKeyInput" placeholder="Enter API key">
+          <div class="settings-help">Get your key from openrouter.ai</div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Model</label>
+          <input type="text" class="settings-input" id="openRouterModelInput" placeholder="anthropic/claude-3.5-sonnet">
+        </div>
+      </div>
+      
+      <div class="settings-divider"></div>
+      
+      <button class="settings-button" id="saveSettingsBtn">Save Settings</button>
+    </div>
+    
+    <!-- Header -->
+    <div class="sidebar-header">
+      <div class="header-content">
+        <div class="header-title">
+          <span class="header-icon" id="iconLogo"></span>
+          <h1>OpenCopilot</h1>
+        </div>
+        <div class="header-actions">
+          <button class="icon-button" id="addTabsBtn" title="Add Tabs to Context"><span id="iconAddTabs"></span></button>
+          <button class="icon-button" id="clearPageBtn" title="Clear Current Chat"><span id="iconClearPage"></span></button>
+          <button class="icon-button" id="clearAllBtn" title="Clear All & Reset Stats"><span id="iconClearAll"></span></button>
+          <button class="icon-button" id="settingsBtn" title="Settings"><span id="iconSettings"></span></button>
+        </div>
+      </div>
+      
+      <div class="usage-stats" id="usageStats">
+        <span class="stat-item" title="Sites indexed">
+          <span class="stat-icon" id="iconGlobe"></span> <span id="sitesCount">0</span>
+        </span>
+        <span class="stat-item" title="Questions asked">
+          <span class="stat-icon" id="iconQuestion"></span> <span id="questionsCount">0</span>
+        </span>
+        <span class="stat-item auto-mode-indicator" id="autoModeIndicator" title="Auto-search is active - I'll automatically find relevant tabs">
+          <span class="stat-icon" id="iconAutoSearch"></span> Auto
+        </span>
+      </div>
+      
+      <!-- Active Tabs Context -->
+      <div class="active-tabs-context" id="activeTabsContext">
+        <div class="context-label">Context:</div>
+        <div class="context-tabs" id="contextTabs">
+          <!-- Active context tabs will be shown here -->
+        </div>
+      </div>
+      
+      <div class="page-info" id="pageInfo" style="display: none;">
+        <div class="page-title" id="pageTitle"></div>
+        <div class="service-badge" id="serviceBadge"></div>
+      </div>
+    </div>
+    
+    <!-- Agent Status Container -->
+    <div class="agent-status-container" id="agentStatusContainer"></div>
+    
+    <!-- Messages Area -->
+    <div class="messages-container" id="messagesContainer">
+      <div class="messages-list" id="messagesList"></div>
+    </div>
+    
+    <!-- Quick Prompts (loaded dynamically) -->
+    <div class="quick-prompts" id="quickPrompts">
+      <!-- Pills are loaded dynamically from settings -->
+    </div>
+    
+    <!-- Error Banner -->
+    <div class="error-banner" id="errorBanner" style="display: none;">
+      <span id="errorMessage"></span>
+      <button id="closeError">×</button>
+    </div>
+    
+    <!-- Input Area -->
+    <div class="input-container">
+      <div class="command-hint" id="commandHint" style="display: none;">
+        <span class="command-type"></span>
+        <span class="command-desc"></span>
+      </div>
+      
+      <!-- @ Mention Popup -->
+      <div class="mention-popup" id="mentionPopup" style="display: none;">
+        <div class="mention-header">
+          <span class="mention-title" id="mentionTitle">Open Tabs</span>
+          <input type="text" class="mention-search" id="mentionSearch" placeholder="Filter tabs...">
+        </div>
+        <div class="mention-list" id="mentionList"></div>
+        <div class="mention-footer">
+          <button class="mention-action" id="searchBookmarksBtn">
+            <span class="mention-action-icon" id="iconMentionBookmark"></span>
+            Search Bookmarks
+          </button>
+          <button class="mention-action" id="searchHistoryBtn">
+            <span class="mention-action-icon" id="iconMentionHistory"></span>
+            Search History
+          </button>
+        </div>
+      </div>
+      
+      <!-- Context Chips -->
+      <div class="context-chips" id="contextChips"></div>
+      
+      <div class="input-wrapper">
+        <textarea 
+          class="message-input" 
+          id="messageInput" 
+          placeholder="Ask anything... @ to add tabs"
+          rows="1"
+        ></textarea>
+        <button class="send-button" id="sendBtn">
+          <span id="iconSend"></span>
+        </button>
+      </div>
+      <div class="input-container-bottom">
+        <div class="context-toggle-wrapper">
+          <label class="context-toggle-label" title="When OFF, uses only the active tab. When ON, searches all open tabs for relevant content">
+            <input type="checkbox" class="context-toggle" id="contextToggle">
+            <span class="toggle-slider"></span>
+            <span class="toggle-text"><span class="toggle-icon" id="iconToggleSearch"></span> Auto-search tabs</span>
+          </label>
+        </div>
+        <div class="input-hint">
+          @ add tabs • @agent for auto • /todo • /note
+        </div>
+      </div>
+    </div>
+    
+    <!-- Todos View -->
+    <div class="view-container" id="todosView" style="display: none;">
+      <div class="view-header">
+        <h2><span class="view-header-icon" id="iconTodosHeader"></span> My Todos</h2>
+        <div class="view-actions">
+          <button class="view-action-btn" id="clearCompletedTodos">Clear completed</button>
+        </div>
+      </div>
+      <div class="todos-list" id="todosList">
+        <div class="empty-state">
+          <div class="empty-icon" id="iconEmptyTodos"></div>
+          <div class="empty-text">No todos yet</div>
+          <div class="empty-hint">Use <code>/todo your task</code> in chat to add one</div>
+        </div>
+      </div>
+      <div class="view-footer">
+        <input type="text" class="quick-add-input" id="quickAddTodo" placeholder="Add a todo...">
+        <button class="quick-add-btn" id="quickAddTodoBtn">Add</button>
+      </div>
+    </div>
+    
+    <!-- Notes View -->
+    <div class="view-container" id="notesView" style="display: none;">
+      <div class="view-header">
+        <h2><span class="view-header-icon" id="iconNotesHeader"></span> My Notes</h2>
+        <div class="view-actions">
+          <button class="view-action-btn" id="exportNotes">Export</button>
+        </div>
+      </div>
+      <div class="notes-list" id="notesList">
+        <div class="empty-state">
+          <div class="empty-icon" id="iconEmptyNotes"></div>
+          <div class="empty-text">No notes yet</div>
+          <div class="empty-hint">Use <code>/note your note</code> in chat to add one</div>
+        </div>
+      </div>
+      <div class="view-footer">
+        <input type="text" class="quick-add-input" id="quickAddNote" placeholder="Add a note...">
+        <button class="quick-add-btn" id="quickAddNoteBtn">Add</button>
+      </div>
+    </div>
+    
+    <!-- Memory View -->
+    <div class="view-container" id="memoryView" style="display: none;">
+      <div class="view-header">
+        <h2><span class="view-header-icon" id="iconMemoryHeader"></span> Memory</h2>
+        <div class="view-actions">
+          <button class="view-action-btn danger" id="clearMemory">Clear all</button>
+        </div>
+      </div>
+      <div class="memory-sections">
+        <div class="memory-section">
+          <h3><span class="section-icon" id="iconSavedMemories"></span> Saved Memories</h3>
+          <div class="memory-list" id="memoriesList">
+            <div class="empty-state small">
+              <div class="empty-text">No memories saved</div>
+              <div class="empty-hint">Use <code>/remember something important</code></div>
+            </div>
+          </div>
+        </div>
+        <div class="memory-section">
+          <h3><span class="section-icon" id="iconStats"></span> Stats</h3>
+          <div class="memory-stats" id="memoryStats">
+            <div class="stat-card">
+              <div class="stat-value" id="statTodos">0</div>
+              <div class="stat-label">Todos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statNotes">0</div>
+              <div class="stat-label">Notes</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statMemories">0</div>
+              <div class="stat-label">Memories</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="view-footer">
+        <input type="text" class="quick-add-input" id="quickAddMemory" placeholder="Remember something...">
+        <button class="quick-add-btn" id="quickAddMemoryBtn">Save</button>
+      </div>
+    </div>
+    
+    <!-- Chat View Container (wraps existing chat UI) -->
+    <div class="view-container chat-view" id="chatView">
+    </div>
+  </div>
+  
+  <script src="htmlToMarkdown.js"></script>
+  <script src="libs/marked.min.js"></script>
+  <script src="libs/mermaid.min.js"></script>
+  <script src="icons.js"></script>
+  <script src="aiService.js"></script>
+  <script src="memoryManager.js"></script>
+  
+  <!-- Agent Mode -->
+  <script src="agentmode/agentPrompts.js"></script>
+  <script src="agentmode/agentTools.js"></script>
+  <script src="agentmode/agentUI.js"></script>
+  <script src="agentmode/agentController.js"></script>
+  <script src="agentmode/index.js"></script>
+  
+  <script src="sidepanel.js"></script>
+</body>
+</html>
+

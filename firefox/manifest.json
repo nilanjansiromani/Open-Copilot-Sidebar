@@ -1,0 +1,80 @@
+{
+  "manifest_version": 3,
+  "name": "OpenCopilot - AI Assistant",
+  "version": "2.1.0",
+  "description": "AI-powered co-pilot for web pages with multi-tab support, memory, and native sidebar",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "bookmarks",
+    "history",
+    "sidebarAction"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "sidebar_action": {
+    "default_panel": "sidepanel.html",
+    "default_title": "OpenCopilot",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "action": {
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    },
+    "default_title": "Open OpenCopilot"
+  },
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "Command+Shift+O"
+      },
+      "description": "Toggle OpenCopilot Sidebar"
+    },
+    "open-settings": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+K",
+        "mac": "Command+Shift+K"
+      },
+      "description": "Open Settings Dashboard"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/libs/marked.min.js",
+        "assets/libs/mermaid.min.js",
+        "assets/fonts/lato.css",
+        "assets/fonts/lato-regular.woff2",
+        "assets/fonts/lato-bold.woff2",
+        "assets/fonts/lato-light.woff2",
+        "assets/fonts/lato-black.woff2"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "options_ui": {
+    "page": "settings.html",
+    "open_in_tab": true
+  }
+}
+
