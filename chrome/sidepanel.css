@@ -1798,7 +1798,7 @@ body {
 }
 
 .mention-list {
-  max-height: 200px;
+  max-height: 450px;  /* Show at least 10 items */
   overflow-y: auto;
   padding: 6px 0;
 }

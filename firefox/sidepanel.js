@@ -717,7 +717,7 @@ async function selectMentionItem(index) {
     }
   }
   
-  // Clear the @query from input
+  // Clear any filter text typed after popup opened (@ is not typed anymore)
   if (mentionStartPos >= 0 && messageInput) {
     const before = messageInput.value.substring(0, mentionStartPos);
     const after = messageInput.value.substring(messageInput.selectionStart);
@@ -729,7 +729,13 @@ async function selectMentionItem(index) {
   hideMentionPopup();
   updateContextChips();
   updatePageInfo();
-  messageInput?.focus();
+  
+  // Return focus to input after a brief delay to ensure DOM updates complete
+  setTimeout(() => {
+    if (messageInput) {
+      messageInput.focus();
+    }
+  }, 10);
 }
 
 // Update context chips display
@@ -875,43 +881,26 @@ function initMentionPopup() {
     }
   });
   
-  // Handle @ trigger and filtering in main input
-  messageInput.addEventListener('input', (e) => {
-    const value = e.target.value;
-    const cursorPos = e.target.selectionStart;
-    
-    if (mentionActive) {
-      // Already in mention mode - update filter
-      // But close if user is typing @agent
-      const textAfterAt = value.substring(mentionStartPos).toLowerCase();
-      if (textAfterAt.startsWith('agent')) {
-        hideMentionPopup();
+  // Handle @ key press - intercept BEFORE character is typed
+  messageInput.addEventListener('keydown', (e) => {
+    // Intercept @ key to prevent it from being typed
+    if (e.key === '@' || (e.shiftKey && e.key === '2')) {
+      const cursorPos = messageInput.selectionStart;
+      // Check it's at start or after space/newline (valid trigger position)
+      if (cursorPos === 0 || messageInput.value[cursorPos - 1] === ' ' || messageInput.value[cursorPos - 1] === '\n') {
+        e.preventDefault(); // Don't type the @ character
+        showMentionPopup(cursorPos); // Show popup at current cursor position
         return;
       }
-      handleMentionInput();
-    } else {
-      // Check if @ was just typed
-      if (cursorPos > 0 && value[cursorPos - 1] === '@') {
-        // Check it's at start or after space
-        if (cursorPos === 1 || value[cursorPos - 2] === ' ' || value[cursorPos - 2] === '\n') {
-          // Don't show popup if it looks like @agent command
-          const remainingText = value.substring(cursorPos).toLowerCase();
-          if (!remainingText.startsWith('agent')) {
-            showMentionPopup(cursorPos); // Start after @
-          }
-        }
-      }
     }
-  });
-  
-  // Handle keyboard navigation
-  messageInput.addEventListener('keydown', (e) => {
+    
+    // Handle keyboard navigation when popup is active
     if (mentionActive) {
       if (handleMentionKeydown(e)) {
         return;
       }
       
-      // Backspace might close popup if query is empty
+      // Backspace might close popup if at start position
       if (e.key === 'Backspace') {
         setTimeout(() => {
           if (messageInput.selectionStart < mentionStartPos) {
@@ -921,6 +910,13 @@ function initMentionPopup() {
           }
         }, 0);
       }
+    }
+  });
+  
+  // Handle input changes for filtering (when user types to filter the list)
+  messageInput.addEventListener('input', (e) => {
+    if (mentionActive) {
+      handleMentionInput();
     }
   });
 }
