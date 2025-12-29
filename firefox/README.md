@@ -39,3 +39,4 @@ This folder contains the Firefox compatible version of OpenCopilot.
 
 For detailed usage instructions, see the main [README.md](../README.md) and [USER_GUIDE.md](../docs/USER_GUIDE.md).
 
+
