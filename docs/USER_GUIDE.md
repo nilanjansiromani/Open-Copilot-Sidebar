@@ -7,11 +7,10 @@ Complete guide to using the OpenCopilot browser extension.
 1. [Getting Started](#getting-started)
 2. [Basic Usage](#basic-usage)
 3. [Context Management](#context-management)
-4. [Agent Mode](#agent-mode)
-5. [Memory System](#memory-system)
-6. [Commands](#commands)
-7. [Settings](#settings)
-8. [Tips & Tricks](#tips--tricks)
+4. [Memory System](#memory-system)
+5. [Commands](#commands)
+6. [Settings](#settings)
+7. [Tips & Tricks](#tips--tricks)
 
 ---
 
@@ -126,63 +125,6 @@ Type `@` in the input field to open the mention popup, which shows:
 4. Press Enter or click to select
 5. Selected items become context chips
 
-**Note:** `@agent` does not trigger the mention popup - it activates agent mode instead.
-
----
-
-## Agent Mode
-
-Agent mode allows the AI to autonomously browse, search, and gather information.
-
-### Activating Agent Mode
-
-Type `@agent <your task>` in the input field.
-
-**Examples:**
-- `@agent search for hotels in bangalore`
-- `@agent find flights to goa under 5000`
-- `@agent research the best restaurants in mumbai`
-
-### How It Works
-
-1. **Planning** - The agent creates a plan for your task
-2. **Searching** - Uses Google AI Search (limited to 4 searches)
-3. **Browsing** - Opens relevant pages in background tabs
-4. **Scraping** - Extracts content from pages
-5. **Analyzing** - Uses AI to analyze gathered information
-6. **Compiling** - Creates a concise summary (max 300 words)
-
-### Agent Status
-
-While the agent is running, you'll see:
-- Current task
-- Progress steps
-- Current action being performed
-- Source pills for gathered information
-
-### Canceling Agent
-
-Click "Cancel Agent" button to stop the agent mid-task.
-
-### Agent Capabilities
-
-The agent can:
-- ✅ Search the web (Google AI Search)
-- ✅ Open URLs in background tabs
-- ✅ Extract page content
-- ✅ Analyze content with AI
-- ✅ Search your history and bookmarks
-- ✅ Open and focus tabs
-- ✅ Access your memory (todos, notes, memories)
-
-### Agent Limitations
-
-- Maximum 4 web searches per task
-- Maximum 10 iterations
-- Maximum 5 tabs open at once
-- 10-second timeout per page load
-- Cannot access restricted pages (chrome://, file://, etc.)
-
 ---
 
 ## Memory System
@@ -261,12 +203,6 @@ The AI automatically uses your memory when answering questions. For example:
 | `/search <query>` | Search bookmarks & history | `/search python tutorial` |
 | `/clear` | Clear current conversation | `/clear` |
 
-### Agent Command
-
-| Command | Description | Example |
-|---------|-------------|---------|
-| `@agent <task>` | Activate autonomous agent mode | `@agent find hotels in mumbai` |
-
 ### @mention Command
 
 | Trigger | Description | Usage |
@@ -327,48 +263,28 @@ Select multiple tabs to analyze content across different pages. Useful for:
 - Getting a comprehensive view of a topic
 - Analyzing related content together
 
-### 2. Agent Mode for Research
-Use agent mode for tasks that require multiple sources:
-- Research topics
-- Find products/services
-- Compare options
-- Gather information from multiple sites
-
-### 3. Memory for Context
+### 2. Memory for Context
 Save important information to memory so the AI can reference it later:
 - Personal preferences
 - Important facts
 - Frequently used information
 - Project-specific details
 
-### 4. Custom Pills for Workflows
+### 3. Custom Pills for Workflows
 Create custom pills for your specific workflows:
 - Code review prompts
 - Documentation templates
 - Analysis formats
 - Summary styles
 
-### 5. Keyboard Shortcuts
+### 4. Keyboard Shortcuts
 - `Ctrl+Shift+O` - Toggle sidebar
 - `Ctrl+Shift+K` - Open settings
 - Arrow keys in @mention popup
 - Enter to send messages
 
-### 6. Source Tracking
+### 5. Source Tracking
 Always check source pills below AI responses to verify information and find original sources.
-
-### 7. Agent Intent Detection
-The agent can detect when to use local data vs. web search:
-- "What did I surf yesterday?" → Searches history
-- "Open the news I read about X" → Finds and opens tabs
-- "What's in my memory about X?" → Searches memory
-
-### 8. Error Recovery
-If the agent encounters an error, it will:
-- Try alternative approaches
-- Use fallback strategies
-- Complete with available information
-- Never fail completely
 
 ---
 
@@ -385,11 +301,6 @@ If the agent encounters an error, it will:
 - Firefox: Check if sidebar is enabled
 - Try reloading the extension
 
-### Agent Mode Not Working
-- Ensure you typed `@agent` correctly
-- Check that you have internet connection (for web search)
-- Verify permissions are granted (tabs, bookmarks, history)
-
 ### Memory Not Saving
 - Check browser storage permissions
 - Try clearing and re-saving
@@ -402,46 +313,15 @@ If the agent encounters an error, it will:
 
 ---
 
-## Advanced Usage
-
-### Intent Detection
-
-The agent can detect user intent and choose appropriate actions:
-
-**Local Data Queries:**
-- "What did I browse yesterday?" → Searches history
-- "Open tabs about X" → Finds and opens relevant tabs
-- "What's in my memory?" → Searches saved memories
-
-**Browser Actions:**
-- "Open the news about X" → Searches history, opens tabs
-- "Focus on the tab with Y" → Finds and focuses tab
-
-**Web Search:**
-- "Search for X" → Uses Google AI Search
-- "Find information about X" → Web search and browsing
-
-### Context Prioritization
-
-When multiple context sources are available, priority is:
-1. Manually selected tabs
-2. Auto-searched tabs (if enabled)
-3. Active tab
-4. Memory (todos, notes, memories)
-5. Bookmarks and history (via @mention)
-
----
-
 ## Best Practices
 
 1. **Be Specific** - Clear questions get better answers
 2. **Use Context** - Select relevant tabs for better context
 3. **Save Important Info** - Use memory system for frequently needed information
-4. **Use Agent Mode Wisely** - Best for research tasks requiring multiple sources
-5. **Check Sources** - Always verify information from source pills
-6. **Organize Memory** - Keep todos, notes, and memories organized
-7. **Customize Pills** - Create pills for your specific workflows
-8. **Theme Preference** - Choose a theme that's comfortable for long sessions
+4. **Check Sources** - Always verify information from source pills
+5. **Organize Memory** - Keep todos, notes, and memories organized
+6. **Customize Pills** - Create pills for your specific workflows
+7. **Theme Preference** - Choose a theme that's comfortable for long sessions
 
 ---
 
@@ -449,7 +329,6 @@ When multiple context sources are available, priority is:
 
 For issues, questions, or feature requests:
 - Check the [README.md](../README.md) for general information
-- Review [AGENT_MODE.md](AGENT_MODE.md) for agent-specific details
 - Open an issue on the repository
 
 ---

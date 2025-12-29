@@ -1,6 +1,6 @@
 # OpenCopilot - AI Assistant Browser Extension
 
-An AI-powered co-pilot browser extension that provides intelligent assistance directly in your browser sidebar. Built for Chrome, Firefox, and Zen browser with support for multiple AI services, autonomous agent mode, memory management, and multi-tab context awareness.
+An AI-powered co-pilot browser extension that provides intelligent assistance directly in your browser sidebar. Built for Chrome, Firefox, and Zen browser with support for multiple AI services, memory management, and multi-tab context awareness.
 
 ## 🌟 Features
 
@@ -13,7 +13,6 @@ An AI-powered co-pilot browser extension that provides intelligent assistance di
 - **Light/Dark Mode** - Beautiful themes that adapt to your preference
 
 ### Advanced Features
-- **@agent Autonomous Mode** - Let the AI agent browse, search, and gather information autonomously
 - **@mention Popup** - Quick access to open tabs, bookmarks, and history with smart filtering
 - **Command System** - Use commands like `/todo`, `/note`, `/remember` to manage your data
 - **Source Pills** - See where information came from with favicon and site title pills
@@ -50,12 +49,7 @@ An AI-powered co-pilot browser extension that provides intelligent assistance di
    - The AI will use the current tab as context by default
    - Use "Add Tabs" to manually select additional tabs for context
 
-3. **Use Agent Mode**
-   - Type `@agent <your task>` to activate autonomous mode
-   - Example: `@agent search for hotels in bangalore`
-   - The agent will browse, search, and compile results automatically
-
-4. **Manage Memory**
+3. **Manage Memory**
    - Use `/todo <text>` to create a todo with current page link
    - Use `/note <text>` to save a note
    - Use `/remember <text>` to save to memory
@@ -64,7 +58,6 @@ An AI-powered co-pilot browser extension that provides intelligent assistance di
 ## 📚 Documentation
 
 - [User Guide](docs/USER_GUIDE.md) - Comprehensive user documentation
-- [Agent Mode](docs/AGENT_MODE.md) - Detailed guide to autonomous agent mode
 
 ## 🏗️ Project Structure
 
@@ -92,7 +85,6 @@ Open-Copilot-Sidebar/
 
 - **Research Assistant** - Ask questions about the pages you're viewing
 - **Content Summarization** - Get TLDR summaries, bullet points, and mindmaps
-- **Autonomous Research** - Let the agent search and compile information for you
 - **Memory Management** - Save important links, notes, and todos
 - **Multi-Tab Analysis** - Analyze content across multiple open tabs
 
@@ -119,16 +111,6 @@ Access settings via the settings icon or `Ctrl+Shift+K`. Configure:
 - API keys
 - Model selection
 - Custom pills (quick prompts)
-
-## 🤖 Agent Mode
-
-The `@agent` command activates autonomous mode where the AI can:
-- Search the web using Google AI Search
-- Open and scrape web pages
-- Analyze content
-- Compile results into concise summaries
-
-See [AGENT_MODE.md](docs/AGENT_MODE.md) for detailed documentation.
 
 ## 💾 Memory System
 

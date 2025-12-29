@@ -1,5 +1,7 @@
 # 🤖 @agent Autonomous Mode
 
+> ⚠️ **TEMPORARILY DISABLED**: Agent mode is currently disabled while we improve it. The code is preserved and will be re-enabled in a future update.
+
 ## Overview
 
 When user types `@agent <task>`, the extension enters **autonomous mode** where it acts as an AI agent that can browse, search, and gather information independently.

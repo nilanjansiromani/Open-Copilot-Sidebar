@@ -321,9 +321,9 @@ function getWelcomeMessage() {
   } else {
     return `Hello! I'm **OpenCopilot**. I'm using the **current tab** as context.
 
-**Commands:** \`@agent\` for autonomous tasks • \`/todo\` • \`/note\` • \`/remember\`
+**Commands:** \`/todo\` to add a task • \`/note\` to save a note • \`/remember\` to save to memory
 
-Try: \`@agent search for hotels in bangalore\``;
+**Tip:** Type \`@\` to add tabs to context`;
   }
 }
 
@@ -1424,11 +1424,14 @@ async function sendMessage(messageText = null) {
     return;
   }
   
-  // Check for @agent command
+  // Check for @agent command - TEMPORARILY DISABLED
   if (text.toLowerCase().startsWith('@agent ')) {
     messageInput.value = '';
     document.getElementById('commandHint').style.display = 'none';
+    addMessage('assistant', '🚧 **Agent mode is temporarily disabled** while we improve it. Please use regular chat for now.');
+    return;
     
+    /* DISABLED - Agent mode code preserved for future use
     const agentTask = text.replace(/^@agent\s+/i, '').trim();
     if (!agentTask) {
       addMessage('assistant', 'Please provide a task for the agent. Example: `@agent search for hotels in bangalore`');
@@ -1441,6 +1444,7 @@ async function sendMessage(messageText = null) {
     // Run agent mode
     await runAgentMode(agentTask);
     return;
+    */
   }
   
   const localServices = ['ollama', 'lmstudio', 'osaurus'];
