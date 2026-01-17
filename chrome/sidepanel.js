@@ -59,7 +59,8 @@ const serviceIcons = {
   ollama: '🦙',
   openrouter: '🌐',
   lmstudio: '🖥️',
-  osaurus: '🦖'
+  osaurus: '🦖',
+  anthropic: '🧠'
 };
 
 const serviceNames = {
@@ -68,7 +69,8 @@ const serviceNames = {
   ollama: 'Ollama',
   lmstudio: 'LM Studio',
   osaurus: 'Osaurus',
-  openrouter: 'OpenRouter'
+  openrouter: 'OpenRouter',
+  anthropic: 'Anthropic'
 };
 
 // DOM Elements
@@ -1167,6 +1169,9 @@ function updateServiceBadge() {
       case 'openrouter':
         modelName = settings.openRouterModel || 'claude-3.5';
         break;
+      case 'anthropic':
+        modelName = settings.anthropicModel || 'claude-3.5-sonnet';
+        break;
     }
     if (modelName.length > 18) {
       modelName = modelName.substring(0, 18) + '...';
@@ -1466,10 +1471,15 @@ async function sendMessage(messageText = null) {
     let relevantTabs = [];
     let usedSources = [];
     
-    // Always use context (active tab or auto-search based on toggle)
+    // always use context (active tab or auto-search based on toggle)
+    let additionalContext = '';
+    let memoryContext = '';
+    
+    // Only search memory/bookmarks/history if we are NOT in specific tab context mode
+    // (i.e. user hasn't manually attached tabs)
+    if (contextTabs.length === 0) {
       // Search bookmarks and history for relevant links
       updateTypingStatus('Searching memory, bookmarks & history...');
-      let additionalContext = '';
       
       try {
         const searchResults = await memoryManager.searchAll(text);
@@ -1492,7 +1502,10 @@ async function sendMessage(messageText = null) {
       }
       
       // Get memory context (todos, notes, memories)
-      const memoryContext = memoryManager.getContextForAI(text);
+      memoryContext = memoryManager.getContextForAI(text);
+    } else {
+      console.log('Skipping memory/history search because specific tabs are attached');
+    }
       
       // Determine which tabs to use for context
       if (contextTabs.length > 0) {

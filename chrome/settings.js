@@ -33,7 +33,8 @@ const sections = {
   ollama: document.getElementById('ollamaSection'),
   lmstudio: document.getElementById('lmstudioSection'),
   osaurus: document.getElementById('osaurusSection'),
-  openrouter: document.getElementById('openrouterSection')
+  openrouter: document.getElementById('openrouterSection'),
+  anthropic: document.getElementById('anthropicSection')
 };
 const saveBtn = document.getElementById('saveBtn');
 const resetBtn = document.getElementById('resetBtn');
@@ -344,6 +345,14 @@ function loadSettings() {
       if (settings.openRouterModel) {
         document.getElementById('openRouterModel').value = settings.openRouterModel;
       }
+
+      // Anthropic settings
+      if (settings.anthropicApiKey) {
+        document.getElementById('anthropicApiKey').value = settings.anthropicApiKey;
+      }
+      if (settings.anthropicModel) {
+        document.getElementById('anthropicModel').value = settings.anthropicModel;
+      }
     }
   });
 }
@@ -365,7 +374,9 @@ function saveSettings() {
     osaurusUrl: document.getElementById('osaurusUrl').value,
     osaurusModel: document.getElementById('osaurusModel').value || 'foundation',
     openRouterApiKey: document.getElementById('openRouterApiKey').value,
-    openRouterModel: document.getElementById('openRouterModel').value || 'anthropic/claude-3.5-sonnet'
+    openRouterModel: document.getElementById('openRouterModel').value || 'anthropic/claude-3.5-sonnet',
+    anthropicApiKey: document.getElementById('anthropicApiKey').value,
+    anthropicModel: document.getElementById('anthropicModel').value || 'claude-3-5-sonnet-20240620'
   };
   
   // Validate based on selected service
@@ -398,6 +409,11 @@ function saveSettings() {
     showStatus('Please enter your OpenRouter API key', 'danger');
     return;
   }
+
+  if (selectedService === 'anthropic' && !settings.anthropicApiKey) {
+    showStatus('Please enter your Anthropic API key', 'danger');
+    return;
+  }
   
   chrome.storage.sync.set({ settings }, () => {
     showStatus('Connection settings saved successfully! 🎉', 'success');
@@ -420,7 +436,9 @@ function resetSettings() {
       osaurusUrl: 'http://127.0.0.1:1337',
       osaurusModel: 'foundation',
       openRouterApiKey: '',
-      openRouterModel: 'anthropic/claude-3.5-sonnet'
+      openRouterModel: 'anthropic/claude-3.5-sonnet',
+      anthropicApiKey: '',
+      anthropicModel: 'claude-3-5-sonnet-20240620'
     };
     
     chrome.storage.sync.set({ settings: defaultSettings }, () => {

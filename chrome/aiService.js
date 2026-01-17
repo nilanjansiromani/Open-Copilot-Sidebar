@@ -21,6 +21,8 @@ class AIService {
         return this.sendToOpenRouter(messages, systemPrompt);
       case 'gemini':
         return this.sendToGemini(messages, systemPrompt);
+      case 'anthropic':
+        return this.sendToAnthropic(messages, systemPrompt);
       default:
         throw new Error('Invalid service selected');
     }
@@ -241,6 +243,50 @@ class AIService {
     
     const data = await response.json();
     return data.candidates[0].content.parts[0].text;
+  }
+  
+  async sendToAnthropic(messages, systemPrompt) {
+    const { anthropicApiKey, anthropicModel = 'claude-3-5-sonnet-20240620' } = this.settings;
+    
+    if (!anthropicApiKey) {
+      throw new Error('Anthropic API key not configured. Please add it in settings.');
+    }
+    
+    // Convert messages to Anthropic format
+    const anthropicMessages = messages
+      .filter(msg => msg.role !== 'system')
+      .map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': anthropicApiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: anthropicModel,
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: anthropicMessages
+        })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'Anthropic API request failed');
+      }
+      
+      const data = await response.json();
+      return data.content[0].text;
+    } catch (error) {
+      throw new Error(`Anthropic connection failed: ${error.message}`);
+    }
   }
 }
 
