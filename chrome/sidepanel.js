@@ -1448,7 +1448,7 @@ async function sendMessage(messageText = null) {
   const localServices = ['ollama', 'lmstudio', 'osaurus'];
   const requiresApiKey = !localServices.includes(settings?.service);
   
-  if (!settings || (requiresApiKey && !settings.groqApiKey && !settings.geminiApiKey && !settings.openRouterApiKey)) {
+  if (!settings || (requiresApiKey && !settings.groqApiKey && !settings.geminiApiKey && !settings.openRouterApiKey && !settings.anthropicApiKey)) {
     showError('Please configure your API keys in settings first.');
     return;
   }
@@ -1839,6 +1839,8 @@ function populateSettingsPanel() {
   document.getElementById('osaurusModelInput').value = settings.osaurusModel || 'foundation';
   document.getElementById('openRouterApiKeyInput').value = settings.openRouterApiKey || '';
   document.getElementById('openRouterModelInput').value = settings.openRouterModel || 'anthropic/claude-3.5-sonnet';
+  document.getElementById('anthropicApiKeyInput').value = settings.anthropicApiKey || '';
+  document.getElementById('anthropicModelInput').value = settings.anthropicModel || 'claude-3-5-sonnet-20240620';
   
   updateServiceSettingsVisibility();
 }
@@ -1852,6 +1854,7 @@ function updateServiceSettingsVisibility() {
   document.getElementById('lmstudioSettings').style.display = selected === 'lmstudio' ? 'block' : 'none';
   document.getElementById('osaurusSettings').style.display = selected === 'osaurus' ? 'block' : 'none';
   document.getElementById('openrouterSettings').style.display = selected === 'openrouter' ? 'block' : 'none';
+  document.getElementById('anthropicSettings').style.display = selected === 'anthropic' ? 'block' : 'none';
   
   if (selected === 'ollama') {
     fetchOllamaModels();
@@ -2071,7 +2074,9 @@ saveSettingsBtn.addEventListener('click', () => {
     osaurusUrl: document.getElementById('osaurusUrlInput').value || 'http://127.0.0.1:1337',
     osaurusModel: document.getElementById('osaurusModelInput').value || 'foundation',
     openRouterApiKey: document.getElementById('openRouterApiKeyInput').value,
-    openRouterModel: document.getElementById('openRouterModelInput').value || 'anthropic/claude-3.5-sonnet'
+    openRouterModel: document.getElementById('openRouterModelInput').value || 'anthropic/claude-3.5-sonnet',
+    anthropicApiKey: document.getElementById('anthropicApiKeyInput').value,
+    anthropicModel: document.getElementById('anthropicModelInput').value || 'claude-3-5-sonnet-20240620'
   };
   
   chrome.runtime.sendMessage({ action: 'saveSettings', settings: newSettings }, (response) => {
@@ -2090,6 +2095,7 @@ saveSettingsBtn.addEventListener('click', () => {
         case 'lmstudio': modelName = newSettings.lmstudioModel; break;
         case 'osaurus': modelName = newSettings.osaurusModel; break;
         case 'openrouter': modelName = newSettings.openRouterModel; break;
+        case 'anthropic': modelName = newSettings.anthropicModel; break;
       }
       
       showSettingsConfirmation(`✓ Now using <strong>${serviceName}</strong> with <strong>${modelName}</strong>`);

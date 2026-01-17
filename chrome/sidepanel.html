@@ -74,6 +74,7 @@
           <option value="lmstudio">LM Studio (Local)</option>
           <option value="osaurus">Osaurus (Local)</option>
           <option value="openrouter">OpenRouter</option>
+          <option value="anthropic">Anthropic</option>
         </select>
       </div>
       
@@ -178,6 +179,19 @@
         <div class="settings-group">
           <label class="settings-label">Model</label>
           <input type="text" class="settings-input" id="openRouterModelInput" placeholder="anthropic/claude-3.5-sonnet">
+        </div>
+      </div>
+
+      <!-- Anthropic Settings -->
+      <div id="anthropicSettings" class="service-settings" style="display: none;">
+        <div class="settings-group">
+          <label class="settings-label">Anthropic API Key</label>
+          <input type="password" class="settings-input" id="anthropicApiKeyInput" placeholder="Enter API key">
+          <div class="settings-help">Get your key from console.anthropic.com</div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Model</label>
+          <input type="text" class="settings-input" id="anthropicModelInput" placeholder="claude-3-5-sonnet-20240620">
         </div>
       </div>
       
